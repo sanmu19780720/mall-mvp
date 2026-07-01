@@ -1,13 +1,11 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack: JDK 17 + Spring Boot 3.2，单模块按包分域
+  数据库：MySQL（生产/本地）/ H2（测试/CI）；迁移用 Flyway，只追加 V2/V3...，不改已合并迁移
+  规范：Conventional Commits，PR 必须带 Closes #<issue号>，合并前须通过 backend-ci（mvn test）
+  分支：功能分支命名 task/<id>-<slug>，PR 目标 dev，dev → main 走正式 release
+  Domain: 购物商城一期，域包括 health / user / product / trade 等
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
