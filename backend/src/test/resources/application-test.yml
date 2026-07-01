@@ -1,0 +1,12 @@
+spring:
+  # Tests / CI use an in-memory H2 database in MySQL-compatibility mode.
+  # No external MySQL connection is required, so mvn test runs anywhere.
+  datasource:
+    url: jdbc:h2:mem:mall_mvp;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration

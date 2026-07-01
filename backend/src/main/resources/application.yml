@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: mall-mvp-backend
+
+  # Shared MySQL runs on Air, reachable via Tailscale.
+  # Values come from environment variables so no secrets are committed.
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:mall_mvp}?useSSL=false&serverTimezone=UTC&characterEncoding=utf8mb4
+    username: ${DB_USER:mall}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: ${SERVER_PORT:8080}
