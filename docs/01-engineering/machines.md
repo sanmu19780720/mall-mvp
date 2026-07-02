@@ -6,16 +6,31 @@
 
 | 角色 | 主机名 | Tailscale IP | 职责 |
 |------|--------|--------------|------|
-| 总控 / 架构 / Review / MySQL 主机 | Air | （本机，你操作的机器） | 定契约与 schema、派发任务、Review PR、合并、运行共享 MySQL |
-| 后端功能 Agent A | backend-agent | 100.64.21.7 | 后端功能包（user / product / cart 等），只写自己 owns 的包 |
-| 后端功能 Agent B | （待命名） | 100.95.162.7 | 后端功能包（trade / admin 等），只写自己 owns 的包 |
-| 前端 + QA Agent | （待命名） | 100.78.243.119 | 用户端 + 后台前端、接口联调、自动化测试、融合测试报告 |
+| 总控 / 架构 / Review | Air | 100.66.95.102 | 需求解析、OpenSpec、PRD、HTML原型图、派发任务、Review PR、合并 |
+| 前端工程师 Agent | frontend-agent | 100.64.21.7 | 前端页面开发，读共享目录的 PRD + 原型图 + OpenSpec |
+| 后端工程师 Agent | backend-agent | 100.95.162.7 | 后端服务开发，读共享目录的 PRD + OpenSpec |
+| 测试/运维 Agent | qa-agent | 100.78.243.119 | 搭建前后端运行环境、执行测试（Apifox CLI 等）、输出测试报告 |
 
 ## 连接方式
 
-- 三台 mini 通过 **Tailscale** 组网，Air 通过 **免密 SSH** 远程登录。
-- Air 上派任务的基本入口：`ssh <mini-ip>`（已配置免密）。
+- 四台机器通过 **Tailscale** 组成虚拟局域网，Air 通过 **免密 SSH** 远程登录各 mini。
+- Air 上派任务的基本入口：`ssh zxyw@<mini-ip>`（已配置免密）。
 - 三台 mini 均已安装：Java / Maven / Node / GitHub CLI（`gh`）/ Claude Code CLI，并已完成 GitHub 登录。
+
+## 共享目录
+
+- Air 通过 **SMB** 共享 `~/mall-shared`，三台 mini 开机自动挂载到 `~/mnt/mall-shared`。
+- 共享目录结构：
+  ```
+  mall-shared/
+  ├── projects/
+  │   └── mall-mvp/
+  │       ├── prd/          # PRD 文档
+  │       ├── prototypes/   # HTML 静态原型图
+  │       └── openspec/     # API 约定、数据模型、协议
+  └── templates/            # 文档模板
+  ```
+- Agent 从共享目录**只读**设计产物，不向共享目录写入。
 
 ## 共享 MySQL
 
@@ -25,6 +40,7 @@
 
 ## 铁律
 
-1. 每台 mini 只在自己 own 的功能包内写代码，不碰公共文件（父 POM、`common`、`config`、`security`、`application.yml`）。这些只有 Air 能改。
-2. 任何数据库结构变化只能通过 Flyway 迁移文件表达。
-3. 每台 mini 独立跑单元测试；只有合并进 `dev` 后的代码才被视为“真实”。
+1. 前端 Agent 只改 `frontend/`，后端 Agent 只改 `backend/`，测试/运维 Agent 只改 `qa/` 或 `tests/`。
+2. 公共文件（父 POM、`common`、`config`、`security`、`application.yml`、Flyway 迁移）只有 Air 能改。
+3. API 接口结构和数据库 schema 以 Air 定稿的 OpenSpec 为准，Agent 不得自行发明字段。
+4. 只有 Air 能合并 PR。
