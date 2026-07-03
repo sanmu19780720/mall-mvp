@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 · Mall MVP</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f6f8;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      width: 360px;
+      max-width: calc(100vw - 32px);
+      padding: 28px 24px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+    h1 { font-size: 20px; margin: 0 0 20px; text-align: center; color: #1f2328; }
+    .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+    .tab {
+      flex: 1;
+      padding: 10px 0;
+      text-align: center;
+      cursor: pointer;
+      color: #6b7280;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    label { display: block; font-size: 13px; color: #374151; margin: 12px 0 6px; }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    input:focus { outline: none; border-color: #2563eb; }
+    .row { display: flex; gap: 8px; }
+    .row input { flex: 1; }
+    button {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      width: 100%;
+      margin-top: 20px;
+      padding: 11px 0;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+    }
+    .btn-primary:disabled { background: #93b4f5; cursor: not-allowed; }
+    .btn-code {
+      white-space: nowrap;
+      padding: 0 14px;
+      background: #eef2ff;
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .btn-code:disabled { color: #9ca3af; background: #f3f4f6; cursor: not-allowed; }
+    .msg { margin-top: 16px; font-size: 13px; text-align: center; min-height: 18px; }
+    .msg.ok { color: #16a34a; }
+    .msg.err { color: #dc2626; }
+    .hint { margin-top: 14px; font-size: 12px; color: #9ca3af; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Mall MVP 登录</h1>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="password">账号密码</div>
+      <div class="tab" data-tab="phone">手机验证码</div>
+    </div>
+
+    <!-- Account / password -->
+    <div class="panel active" id="panel-password">
+      <label for="username">用户名</label>
+      <input id="username" type="text" autocomplete="username" placeholder="demo" />
+      <label for="password">密码</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="password123" />
+      <button class="btn-primary" id="btn-password-login">登录</button>
+    </div>
+
+    <!-- Phone / SMS code -->
+    <div class="panel" id="panel-phone">
+      <label for="phone">手机号</label>
+      <input id="phone" type="tel" autocomplete="tel" placeholder="13800138000" />
+      <label for="smsCode">验证码</label>
+      <div class="row">
+        <input id="smsCode" type="text" inputmode="numeric" maxlength="6" placeholder="6 位验证码" />
+        <button class="btn-code" id="btn-send-code">发送验证码</button>
+      </div>
+      <button class="btn-primary" id="btn-phone-login">登录</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <div class="hint">开发环境：验证码打印在后端控制台日志中。</div>
+  </div>
+
+  <script>
+    // Same-origin when served by Spring Boot; falls back to localhost:8080 when the
+    // file is opened directly (file://). Adjust if the backend runs elsewhere.
+    const API_BASE = location.protocol === 'file:' ? 'http://localhost:8080' : '';
+
+    const msgEl = document.getElementById('msg');
+
+    function showMsg(text, ok) {
+      msgEl.textContent = text;
+      msgEl.className = 'msg ' + (ok ? 'ok' : 'err');
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        showMsg('', true);
+      });
+    });
+
+    async function postJson(path, body) {
+      const res = await fetch(API_BASE + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      let data = {};
+      try { data = await res.json(); } catch (e) { /* empty body */ }
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    function onLoginSuccess(data) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('tokenExpiresIn', data.expiresIn);
+      showMsg('登录成功，token 已保存到 localStorage', true);
+    }
+
+    // Account / password login
+    document.getElementById('btn-password-login').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      if (!username || !password) { showMsg('请输入用户名和密码', false); return; }
+      const { ok, data } = await postJson('/api/auth/login', { username, password });
+      if (ok) { onLoginSuccess(data); }
+      else { showMsg('登录失败：' + (data.error || '未知错误'), false); }
+    });
+
+    // Send SMS code (with 60s countdown to mirror the backend rate limit)
+    const sendBtn = document.getElementById('btn-send-code');
+    let countdownTimer = null;
+
+    function startCountdown() {
+      let left = 60;
+      sendBtn.disabled = true;
+      sendBtn.textContent = left + 's';
+      countdownTimer = setInterval(() => {
+        left -= 1;
+        if (left <= 0) {
+          clearInterval(countdownTimer);
+          sendBtn.disabled = false;
+          sendBtn.textContent = '发送验证码';
+        } else {
+          sendBtn.textContent = left + 's';
+        }
+      }, 1000);
+    }
+
+    sendBtn.addEventListener('click', async () => {
+      const phone = document.getElementById('phone').value.trim();
+      if (!phone) { showMsg('请输入手机号', false); return; }
+      const { ok, data } = await postJson('/api/auth/sms-code', { phone });
+      if (ok) {
+        showMsg('验证码已发送，请查看后端控制台日志', true);
+        startCountdown();
+      } else {
+        showMsg('发送失败：' + (data.error || '未知错误'), false);
+      }
+    });
+
+    // Phone / SMS code login
+    document.getElementById('btn-phone-login').addEventListener('click', async () => {
+      const phone = document.getElementById('phone').value.trim();
+      const smsCode = document.getElementById('smsCode').value.trim();
+      if (!phone || !smsCode) { showMsg('请输入手机号和验证码', false); return; }
+      const { ok, data } = await postJson('/api/auth/login', { phone, smsCode });
+      if (ok) { onLoginSuccess(data); }
+      else { showMsg('登录失败：' + (data.error || '未知错误'), false); }
+    });
+  </script>
+</body>
+</html>
