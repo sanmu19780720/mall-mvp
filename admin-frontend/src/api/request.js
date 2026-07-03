@@ -11,9 +11,10 @@ const request = axios.create({
 // 请求拦截器：自动注入 JWT token
 request.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    // 在拦截器内部获取 store，确保 Pinia 已在 app 挂载后可用
+    const userStore = useUserStore()
+    if (userStore.token) {
+      config.headers.Authorization = `Bearer ${userStore.token}`
     }
     return config
   },
