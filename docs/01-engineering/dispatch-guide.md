@@ -7,6 +7,7 @@
 1. **Issue 只包含该角色的子任务**，不引用完整 tasks.md，避免 Agent 越界执行其他角色的工作。
 2. **prompt 里必须显式声明职责边界**，不能假设 Agent 会自己读 `agent-roles.md`。
 3. **前置条件要写清楚**，前端依赖后端接口、测试依赖前后端都合并后才能开始。
+4. **派发前必须先 push change 文件**：Air 产出 change 后立即 `git push origin dev`，再创建 Issue。mini `git pull` 后才能读到 `openspec/changes/<change-name>/` 的 proposal/design/tasks。不得先建 Issue 再推文件。
 
 ---
 
