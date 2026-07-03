@@ -49,19 +49,22 @@ public class UserController {
         String nickname = trimToNull(request.nickname());
         String email = trimToNull(request.email());
 
-        if (username == null) {
-            throw new UserException(HttpStatus.BAD_REQUEST, "USERNAME_REQUIRED");
-        }
         if (password == null || password.isBlank()) {
             throw new UserException(HttpStatus.BAD_REQUEST, "PASSWORD_REQUIRED");
         }
         if (password.length() < MIN_PASSWORD_LENGTH) {
             throw new UserException(HttpStatus.BAD_REQUEST, "PASSWORD_TOO_SHORT");
         }
-        if (phone == null) {
-            throw new UserException(HttpStatus.BAD_REQUEST, "PHONE_REQUIRED");
+        if (nickname == null) {
+            throw new UserException(HttpStatus.BAD_REQUEST, "NICKNAME_REQUIRED");
         }
-        if (!PHONE_PATTERN.matcher(phone).matches()) {
+        // username / phone / email are three interchangeable identifiers: at least one
+        // must be supplied, but none is individually mandatory.
+        if (username == null && phone == null && email == null) {
+            throw new UserException(HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
+        }
+        // Format checks apply only to identifiers that were actually provided.
+        if (phone != null && !PHONE_PATTERN.matcher(phone).matches()) {
             throw new UserException(HttpStatus.BAD_REQUEST, "INVALID_PHONE");
         }
         if (email != null && !EMAIL_PATTERN.matcher(email).matches()) {

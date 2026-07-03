@@ -24,16 +24,17 @@ public class UserService {
 
     /**
      * Registers a new user. The caller is expected to have validated presence/format;
-     * this method enforces cross-row uniqueness (username, phone, and email when given)
-     * before hashing the password and inserting the row.
+     * this method enforces cross-row uniqueness for each identifier that was supplied
+     * (username, phone, email are all optional and interchangeable) before hashing the
+     * password and inserting the row.
      *
      * @return the persisted user (with DB-assigned {@code id} and {@code createdAt})
      */
     public User register(String username, String password, String phone, String nickname, String email) {
-        if (userRepository.existsByUsername(username)) {
+        if (username != null && userRepository.existsByUsername(username)) {
             throw new UserException(HttpStatus.CONFLICT, "USERNAME_EXISTS");
         }
-        if (userRepository.existsByPhone(phone)) {
+        if (phone != null && userRepository.existsByPhone(phone)) {
             throw new UserException(HttpStatus.CONFLICT, "PHONE_EXISTS");
         }
         if (email != null && userRepository.existsByEmail(email)) {
