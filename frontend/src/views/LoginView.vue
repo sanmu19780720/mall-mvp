@@ -7,6 +7,9 @@
     <van-nav-bar title="登录" left-arrow @click-left="$router.back()" />
     <div class="login__body">
       <p>登录页占位。</p>
+      <p class="login__register-link">
+        没有账号？<router-link to="/register">去注册</router-link>
+      </p>
     </div>
   </div>
 </template>
