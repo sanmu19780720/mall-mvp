@@ -1,6 +1,35 @@
 # Tasks
 
-## 1. 准备（后端）
+## 前端（role:frontend）
+
+### 1. 准备
+
+- [ ] 1.1 从最新 `dev` 切分支 `task/register-002-frontend`
+- [ ] 1.2 阅读 `openspec/changes/user-register/` 下所有 artifact
+- [ ] 1.3 确认后端 PR #14 已合并到 `dev`（注册接口已可用）
+
+### 2. 注册页面
+
+- [ ] 2.1 在 `frontend/src/views/` 新增 `RegisterView.vue`
+  - 表单字段：手机号（或用户名）、密码、昵称
+  - 使用 Vant 组件（`van-form`、`van-field`、`van-button`）
+  - 手机号格式前端校验
+  - 调用 `POST /api/user/register`，成功后跳转 `/login`
+  - 失败时展示具体错误（用户名/手机号重复等）
+- [ ] 2.2 在 `frontend/src/router/index.js` 注册路由 `/register`
+- [ ] 2.3 在登录页 `LoginView.vue` 底部加"没有账号？去注册"跳转链接
+
+### 3. 交付（前端）
+
+- [ ] 3.1 `git commit`（Conventional Commits，带 `#<issue号>`）
+- [ ] 3.2 `git push -u origin task/register-002-frontend`
+- [ ] 3.3 `gh pr create --base dev`，描述写 `Closes #<issue号>`
+
+---
+
+## 后端（role:backend）
+
+### 1. 准备（后端）
 
 - [ ] 1.1 从最新 `dev` 切分支 `task/register-001-backend`
 - [ ] 1.2 阅读 `openspec/changes/user-register/` 下所有 artifact
@@ -41,3 +70,34 @@
 - [ ] 5.1 `git commit`（Conventional Commits，带 `#<issue号>`）
 - [ ] 5.2 `git push -u origin task/register-001-backend`
 - [ ] 5.3 `gh pr create --base dev`，描述写 `Closes #<issue号>` 并粘贴 `mvn test` 结果
+
+---
+
+## QA（role:qa）
+
+> 前置条件：后端 PR #14 和前端注册页 PR 均已合并到 `dev`，后端服务在 Air（100.66.95.102:8080）启动。
+
+### 1. 准备
+
+- [ ] 1.1 从最新 `dev` 切分支 `task/register-003-qa`
+- [ ] 1.2 阅读 `openspec/changes/user-register/specs/user-register/spec.md`
+
+### 2. 验收测试
+
+- [ ] 2.1 注册成功 → 201，返回 id
+- [ ] 2.2 用户名重复 → 409 USERNAME_TAKEN
+- [ ] 2.3 手机号重复 → 409 PHONE_TAKEN
+- [ ] 2.4 邮箱重复 → 409 EMAIL_TAKEN
+- [ ] 2.5 缺少 password → 400 INVALID_REQUEST
+- [ ] 2.6 三个唯一标识均为空 → 400 INVALID_REQUEST
+- [ ] 2.7 手机号格式错误 → 400 INVALID_PHONE
+- [ ] 2.8 不带 Token 直接请求 → 201（不被 JWT 拦截）
+- [ ] 2.9 前端注册页：填写表单 → 成功跳转登录页
+- [ ] 2.10 前端注册页：重复手机号 → 展示错误提示
+
+### 3. 交付（QA）
+
+- [ ] 3.1 在 `qa/` 目录新增 `register-test-report.md`，记录每条用例结果
+- [ ] 3.2 `git commit`（带 `#<issue号>`）
+- [ ] 3.3 `git push -u origin task/register-003-qa`
+- [ ] 3.4 `gh pr create --base dev`，描述写 `Closes #<issue号>`
