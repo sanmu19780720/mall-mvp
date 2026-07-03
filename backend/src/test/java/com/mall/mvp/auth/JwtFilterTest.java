@@ -78,6 +78,17 @@ class JwtFilterTest {
     }
 
     @Test
+    void registerPathIsPublic() throws Exception {
+        MockHttpServletRequest req = request("POST", "/api/user/register");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        MockFilterChain chain = new MockFilterChain();
+
+        filter.doFilter(req, res, chain);
+
+        assertNotNull(chain.getRequest(), "registration endpoint must bypass the token check");
+    }
+
+    @Test
     void healthPathIsPublic() throws Exception {
         MockHttpServletRequest req = request("GET", "/api/health");
         MockHttpServletResponse res = new MockHttpServletResponse();
