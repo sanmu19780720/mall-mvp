@@ -36,7 +36,9 @@ public class JwtFilter extends OncePerRequestFilter {
         if (!path.startsWith("/api/")) {
             return true; // static assets / non-API paths
         }
-        return path.startsWith("/api/auth/") || path.equals("/api/health");
+        return path.startsWith("/api/auth/")
+                || path.equals("/api/health")
+                || path.equals("/api/user/register"); // public self-service registration
     }
 
     @Override
