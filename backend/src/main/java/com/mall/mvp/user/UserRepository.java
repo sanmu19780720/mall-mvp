@@ -48,10 +48,17 @@ public class UserRepository {
     }
 
     public boolean existsByUsername(String username) {
+        // No identifier supplied means nothing to collide with; skip the query.
+        if (username == null) {
+            return false;
+        }
         return exists("SELECT COUNT(*) FROM users WHERE username = ?", username);
     }
 
     public boolean existsByPhone(String phone) {
+        if (phone == null) {
+            return false;
+        }
         return exists("SELECT COUNT(*) FROM users WHERE phone = ?", phone);
     }
 
