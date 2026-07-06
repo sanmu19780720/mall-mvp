@@ -38,7 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         return path.startsWith("/api/auth/")
                 || path.equals("/api/health")
-                || path.equals("/api/user/register"); // public self-service registration
+                || path.equals("/api/user/register") // public self-service registration
+                || path.startsWith("/api/products"); // public product catalog (list + detail)
     }
 
     @Override
