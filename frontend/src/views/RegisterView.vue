@@ -16,9 +16,9 @@ const loading = ref(false)
 
 // 后端错误码 -> 中文提示
 const ERROR_MESSAGES = {
-  USERNAME_TAKEN: '该用户名已被注册',
-  PHONE_TAKEN: '该手机号已被注册',
-  EMAIL_TAKEN: '该邮箱已被注册',
+  USERNAME_EXISTS: '该用户名已被注册',
+  PHONE_EXISTS: '该手机号已被注册',
+  EMAIL_EXISTS: '该邮箱已被注册',
   INVALID_PHONE: '手机号格式不正确',
   INVALID_REQUEST: '请填写完整的注册信息',
 }
